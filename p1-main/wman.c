@@ -15,10 +15,10 @@ int read_and_print(char* file_path){
         return 1; // Exit with an error code
     }
 
-    //Get the number of lines in the file
-    fseek(file, 0L, SEEK_END);
-    const int file_size = ftell(file);
-    rewind(file);
+    // //Get the number of lines in the file
+    // fseek(file, 0L, SEEK_END);
+    const int file_size = 256;
+    // rewind(file);
 
     // Read and display the contents of the file line by line
     char line[file_size]; // You can adjust the buffer size as needed
@@ -50,12 +50,12 @@ int strict_search_files(const char* path, const char* target_name) {
     while ((entry = readdir(dir))) {
         //printf("%s\n", entry->d_name);
         //Case1: Reach out a Regular File 
-        if (entry->d_type == DT_REG && strcmp(entry->d_name, target_name) == 0) {
+        if(strcmp(target_name, entry->d_name)==0){
             char full_path[256];
             snprintf(full_path, sizeof(full_path), "%s/%s", path, target_name);
             closedir(dir);
             return read_and_print(full_path);; // Exit after finding the file
-        }
+        }    
     }
     closedir(dir);
     return 1;
