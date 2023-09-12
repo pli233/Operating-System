@@ -1,9 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <ctype.h>
-
 int read_and_print(char* file_path){
 
     // Open the file for reading
@@ -86,7 +83,7 @@ int main(int argc, char *argv[]) {
             }
         }
         printf("No manual entry for %s\n", page);    
-        return 1;
+        return 0;
     }
     // Case2: Handle two arguments execution
     else if (argc == 3){
@@ -108,13 +105,11 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         printf("No manual entry for %s in section %s\n", page, section);
-        return 1;
+        return 0;
     }
     // Case3: Check if there are more than two arguments
     else {
         printf("What manual page do you want?\nFor example, try 'wman wman'\n");
-        return 1;
+        return 0;
     }
-
-    return 0;
 }
