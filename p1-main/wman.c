@@ -29,7 +29,7 @@ int read_and_print(char* file_path){
 }
 
 /**
- * This function will return the 
+ * This function will return 0 if nothing is wrong, and return 1 if file cannot be opened or there is no match of page 
 */
 int strict_search_files(const char* path, const char* target_name) {
     DIR *dir;
@@ -54,6 +54,7 @@ int strict_search_files(const char* path, const char* target_name) {
             return read_and_print(full_path);; // Exit after finding the file
         }    
     }
+    //No match of page
     closedir(dir);
     return 1;
 }
@@ -63,8 +64,9 @@ int main(int argc, char *argv[]) {
 
     // Base Case: Check if there are any command-line arguments
     if (argc < 2) {
+        //No page is specified
         printf("What manual page do you want?\nFor example, try 'wman wman'\n");
-        return 1; // Exit with an error code
+        return 0; // Exit with an error code
     }
     // Case1: Handle one argument execution, search the command name in each subfile
     else if (argc == 2)
@@ -90,7 +92,8 @@ int main(int argc, char *argv[]) {
         const char* root_dir = "./man_pages/man";
         char* page = argv[2];
         char* section= argv[1];
-
+        
+        //Not a decimal or not in range
         if(strlen(section) != 1 || section[0] < '0' || section[0] > '9'){
             printf("invalid section\n");
             return 1;
@@ -100,10 +103,11 @@ int main(int argc, char *argv[]) {
 
         snprintf(filepath, sizeof(filepath), "%s%s", root_dir, section);
         snprintf(filename, sizeof(filename), "%s.%s", page, section);
-
+        //We find man page we found
         if(strict_search_files(filepath,filename) == 0){
             return 0;
         }
+        //No man page find or something else wrong
         printf("No manual entry for %s in section %s\n", page, section);
         return 0;
     }

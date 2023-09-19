@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     // Base Case: Check if there are any command-line arguments
     if (argc < 2) {
         printf("wapropos what?\n");
-        return 1; // Exit with an error code
+        return 0; 
     }
 
     // Case1: Handle one argument execution, search the page name in each subfile
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
             return 0;
         } else {
             printf( "nothing appropriate\n");
-            return 1;
+            return 0;
         }
     }
     // Case2: Handle two arguments execution
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     // Case3: Check if there are more than two arguments
     else {
         printf("wapropos what?\n");
-        return 1;
+        return 0;
     }
 }
 

@@ -83,7 +83,8 @@ int str_to_upper(char *str) {
 //format_line
 int format_line(char *line) {
 
-    char* formatted_line = (char *) malloc((strlen(line)+1) * sizeof(char));
+    const int size = 256;  // or whatever maximum size you expect
+    char formatted_line[size];
     char* ptr = line;
     char* format_ptr = formatted_line;
 
@@ -116,7 +117,6 @@ int format_line(char *line) {
     }
     *format_ptr = '\0';
     strcpy(line, formatted_line);
-    free(formatted_line);
     return 0;
 }
 
