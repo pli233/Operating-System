@@ -6,7 +6,6 @@
 
 
 
-
 /* @Input path, the path of the folder that we will read
  * @Input keyword, the keyword we check for match
  * @Input section, the section number we will search
