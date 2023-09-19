@@ -226,8 +226,20 @@ int contain_keyword(char* file_path, char* keyword) {
         }
         //3.3 If it is a field, we need to compare it to name and description
         if (isField) {
+
+            //Use a for loop to extract special characters
+            const char* special_char[] = {"\033[1m", "\033[3m", "\033[4m","\033[0m"};
+            //Length of each special character
+            int len_specialChar = 4;
+            int num_specialChar = sizeof(special_char)/sizeof (special_char[0]);
+            for(int i = 0; i< num_specialChar; ++i){
+                ptr = line;
+                while((ptr = strstr(ptr, special_char[i]))!=NULL){
+                    memmove(ptr,ptr+ len_specialChar, strlen(ptr+ len_specialChar)+1);
+                }
+            }
             //Check if it is NAME or DESCRIPTION field
-            if (strstr(line, "NAME") || strstr(line, "DESCRIPTION")) {
+            if (strcmp(line, "NAME\n") ==0 || strcmp(line, "DESCRIPTION\n")==0) {
                 //We reach out a relevant field, set relevant to 1
                 relevant = 1;
                 //Use continue to read the next line
@@ -235,6 +247,7 @@ int contain_keyword(char* file_path, char* keyword) {
             }
             //Otherwise, we reach out to the start of a new field, but irrelevant
             else {
+                //Reset relevant to 0
                 relevant = 0;
                 continue;
             }
@@ -243,6 +256,7 @@ int contain_keyword(char* file_path, char* keyword) {
         //Check if there is a keyword substring contain in the line
         //printf("relevant: %d\n", relevant);
         if (relevant) {
+            //printf("%s", line);
             //Use strstr to check substring
             if (strstr(line, keyword)) {
                 //There is a match, return 1
