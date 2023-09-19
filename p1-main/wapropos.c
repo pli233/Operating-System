@@ -14,7 +14,7 @@
  * @return 1, if there is some keyword match in NAME or DESCRIPTION field at assigned section
  * @return 0, if there is no match
  */
-int strict_search_files(char *path, char *keyword, int section);
+int strict_search_files(char* path, char* keyword, int section);
 /* @Input file_path, the path of the file that we will read
  * @Input keyword, the keyword we check for match
  *
@@ -24,7 +24,7 @@ int strict_search_files(char *path, char *keyword, int section);
  * @return 1, if there is a match at assigned field
  * @return 0, if there is no match
  */
-int contain_keyword(char *file_path, char *keyword);
+int contain_keyword(char* file_path, char* keyword);
 /* @Input file_path, the path of the file that we will read
  * @Input name_liner, the variable that we assign content back to the calling program
  *
@@ -34,13 +34,13 @@ int contain_keyword(char *file_path, char *keyword);
  * @return 1, if there is a match at assigned field
  * @return 0, if there is no match
  */
-int get_name_liner(char *file_path, char *name_liner);
+int get_name_liner(char* file_path, char* name_liner);
 
 /*
  * Main gate for program
  *
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // printf("Number of arguments: %d\n", argc-1);
 
     // Base Case: Check if there are any command-line arguments
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         return 0; 
     }
 
-    // Case1: Handle one argument execution, search the page name in each subfile
+    // Case1: Handle one argument execution, search the page name in each sub-dir
     else if (argc == 2) {
         const char *root_dir = "./man_pages/man";
         char *keyword = argv[1];
@@ -77,15 +77,25 @@ int main(int argc, char *argv[]) {
 
         char filepath[256];
         snprintf(filepath, sizeof(filepath), "%s%s", root_dir, section);
-        if (strict_search_files(filepath, keyword, atoi(section))) {
+        int result = strict_search_files(filepath, keyword, atoi(section));
+        //There is match
+        if (result>0) {
             return 0;
-        } else {
+        }
+        //There is no match
+        else if(result==0) {
             printf( "nothing appropriate\n");
             return 0;
         }
+        //Error opening file
+        else{
+            return 1;
+        }
     }
-    // Case3: Check if there are more than two arguments
+    // Case3: Check if there are more than two or less than one arguments
     else {
+        //If no keyword is provided on the command line then the program should print
+        // "wapropos what?\n" and exit with code 0.
         printf("wapropos what?\n");
         return 0;
     }
@@ -94,7 +104,9 @@ int main(int argc, char *argv[]) {
 
 
 
-/* @Input path, the path of the folder that we will read
+/**
+ *
+ * @Input path, the path of the folder that we will read
  * @Input keyword, the keyword we check for match
  * @Input section, the section number we will search
  *
@@ -103,8 +115,9 @@ int main(int argc, char *argv[]) {
  *
  * @return 1, if there is some keyword match in NAME or DESCRIPTION field at assigned section
  * @return 0, if there is no match
+ * @return match, which is the number of match
  */
-int strict_search_files(char *path, char *keyword, int section) {
+int strict_search_files(char* path, char* keyword, int section) {
     DIR *dir;
     struct dirent *entry;
     // 1.Open the directory
@@ -112,7 +125,7 @@ int strict_search_files(char *path, char *keyword, int section) {
     //if we cannot open the directory, we return 1 and print out error information
     if (dir == NULL) {
         perror("Error opening directory");
-        return 1;
+        return -1;
     }
     // 2.Read the files inside the directory, find files contain keyword and print info
     int match = 0;
@@ -147,6 +160,8 @@ int strict_search_files(char *path, char *keyword, int section) {
                 char name_liner[256];
                 get_name_liner(full_path, name_liner);
                 //2.8 Print out the information
+                //The output list must be in the form:
+                //<page> (<section>) - <name_one_liner>
                 printf("%s (%s) %s", page, sec, name_liner);
                 //2.9 Record a match
                 match++;
@@ -159,7 +174,10 @@ int strict_search_files(char *path, char *keyword, int section) {
 }
 
 
-/* @Input file_path, the path of the file that we will read
+/**
+ * Check if the file contain keyword in NAME or DESCRIPTION field
+ *
+ * @Input file_path, the path of the file that we will read
  * @Input keyword, the keyword we check for match
  *
  * The function will find if there is a match of keyword in the field of NAME or DESCRIPTION
@@ -168,7 +186,7 @@ int strict_search_files(char *path, char *keyword, int section) {
  * @return 1, if there is a match at assigned field
  * @return 0, if there is no match
  */
-int contain_keyword(char *file_path, char *keyword) {
+int contain_keyword(char* file_path, char* keyword) {
 
     // 1.Open the file for reading
     FILE *file = fopen(file_path, "r");
@@ -178,7 +196,6 @@ int contain_keyword(char *file_path, char *keyword) {
         printf("cannot open file\n");
         return 0;
     }
-
 
     //2.Define and initialize some variables
     //Define size for each line we read
@@ -190,41 +207,27 @@ int contain_keyword(char *file_path, char *keyword) {
 
     //3.Check if the name or description field in the file contain our keyword line by line
     while (fgets(line, size, file) != NULL) {
-        //3.1 Delete every special case in the line
+        //3.1 Check if the line is empty
         //Use a pointer to point to the start of the line
-        char *ptr;
-        int isField = 1;
-        //Define special characters that we need to clean up
-        const char *sequences[] = {"\033[1m", "\033[3m", "\033[4m", "\033[0m"};
-        int seq_len = 4;
-        int num_sequences = sizeof(sequences) / sizeof(sequences[0]);
-
-        //3.2 Use a for loop to delete each special character
-        for (size_t i = 0; i < num_sequences; ++i) {
-            //Move ptr back to the head of the line
-            ptr = line;
-            while ((ptr = strstr(ptr, sequences[i])) != NULL) {
-                memmove(ptr, ptr + seq_len, strlen(ptr + seq_len) + 1);
-            }
-        }
-        //printf("Cleaned Line: %s", line);
-        //Move ptr back to the head of the line
-        ptr = line;
-
-
-        //3.3 Check if the line is a Section, it should be all Upper Case besides the space " "
-        while (*ptr != '\0') {
-            // Check when character is not white space and not Upper Case, also we need to consider new line
-            if ((*ptr != ' ' && islower((unsigned char) *ptr)) || strspn(line, " \t\n\r") == strlen(line)) {
-                isField = 0;
+        char* ptr = line;
+        int isEmpty = 1;
+        while(*ptr != '\0'){
+            if (!isspace(*ptr)){
+                isEmpty = 0;
                 break;
             }
             ptr++;
         }
-        //3.4 If it is a field, we need to compare it to name and description
+
+        //3.2 Check if the line is a field;
+        int isField = 0;
+        if (!isEmpty && !isspace(line[0])) {
+            isField =1;
+        }
+        //3.3 If it is a field, we need to compare it to name and description
         if (isField) {
             //Check if it is NAME or DESCRIPTION field
-            if (strcmp(line, "NAME\n") == 0 || strcmp(line, "DESCRIPTION\n") == 0) {
+            if (strstr(line, "NAME") || strstr(line, "DESCRIPTION")) {
                 //We reach out a relevant field, set relevant to 1
                 relevant = 1;
                 //Use continue to read the next line
@@ -238,6 +241,7 @@ int contain_keyword(char *file_path, char *keyword) {
         }
         //4 If we reach here, it means that we are in a relevant section and we are reading content
         //Check if there is a keyword substring contain in the line
+        //printf("relevant: %d\n", relevant);
         if (relevant) {
             //Use strstr to check substring
             if (strstr(line, keyword)) {
@@ -263,7 +267,7 @@ int contain_keyword(char *file_path, char *keyword) {
  * @return 0, if there is no match
  */
 
-int get_name_liner(char *file_path, char *name_liner) {
+int get_name_liner(char* file_path, char* name_liner) {
 
     //1. Open the file for reading
     FILE *file = fopen(file_path, "r");
@@ -288,9 +292,9 @@ int get_name_liner(char *file_path, char *name_liner) {
             char *ptr = name_liner;
             while (*ptr != '-')
                 ptr++;
-            // Delete strings before ' '
+            // Delete strings before '-'
             memmove(name_liner, ptr, strlen(ptr) + 1);
-            //Close the file and return
+            //Close the file and return 1
             fclose(file);
             return 1;
         }
