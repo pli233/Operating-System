@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <unistd.h>
 
 //return 0 if nothing wrong, return 1 if we see there is something wrong
 int checkFirstLine(FILE* file, char* line, int size){
@@ -81,7 +82,7 @@ int str_to_upper(char *str) {
 }
 
 //format_line
-int format_line(char *line) {
+void format_line(char *line) {
 
     const int size = 256;  // or whatever maximum size you expect
     char formatted_line[size];
@@ -117,7 +118,6 @@ int format_line(char *line) {
     }
     *format_ptr = '\0';
     strcpy(line, formatted_line);
-    return 0;
 }
 
 
@@ -132,8 +132,8 @@ int readFile(char* file_path){
 
     // 1.1 Check if the file was successfully opened, if we cannot open the file, we return 0
     if (file == NULL) {
-        printf("File doesn't exist\n");
-        return 0;
+        printf("cannot open file\n");
+        return 1;
     }
 
 
@@ -186,7 +186,9 @@ int readFile(char* file_path){
             fprintf(output_file, "\033[1m%s\033[0m\n", section_name);
         }
         else{
+            //format the line
             format_line(line);
+            //indenting the content with 7 spaces
             fprintf(output_file, "%-*s%s", 7, " ",line);
         }
     }
@@ -209,10 +211,18 @@ int main(int argc, char *argv[]) {
     // Base Case: Check if there are correct number of command-line arguments
     if (argc < 2) {
         printf("Improper number of arguments\nUsage: ./wgroff <file>\n");
-        return 0; // Exit with an error code
+        return 0; //  exit with code 0
     }
-
-    //Use method to read the file
-    readFile(argv[1]);
-    return 0;
+    //Ignore more than 1 argument for wgroff
+    else{
+        //Check if file exists
+        if (access(argv[1], F_OK) == 0) {
+            //Use method to read the file
+            return readFile(argv[1]);
+        }
+        //If input file provided on the command line doesn't exist, the program should print
+        //"File doesn't exist\n" and exit with code 0.
+        printf("File doesn't exist\n");
+        return 0;
+    }
 }
